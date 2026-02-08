@@ -154,8 +154,23 @@ class _TaskPageState extends State<TaskPage> {
             taskName: toDoList[index][0], 
             taskCompleted: toDoList[index][1], 
             desc: toDoList[index][2],
+            weeklist: toDoList[index].length > 3 ? List.from(toDoList[index][3]) : <String>[],
             onChanged: (value) => checkBoxChanged(value,index),
             deleteFunction: (context) => _deleteTask(index),
+            onSave: (title, desc, completed, weeklist){
+              setState(() {
+                toDoList[index][0] = title;
+                toDoList[index][1] = completed;
+                toDoList[index][2] = desc.isNotEmpty ? desc : null;
+                // make sure you store a copy
+                toDoList[index] = [
+                  toDoList[index][0],
+                  toDoList[index][1],
+                  toDoList[index][2],
+                  List.from(weeklist)
+                ];
+              });
+            },
           );
         },
       ),     

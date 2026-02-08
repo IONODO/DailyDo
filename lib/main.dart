@@ -14,15 +14,15 @@ class MainApp extends StatelessWidget {
   debugShowCheckedModeBanner: false,
   theme: ThemeData(
     useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+    colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber),
     brightness: Brightness.light,
   ),
   darkTheme: ThemeData(
     useMaterial3: true,
-    colorScheme: ColorScheme.fromSeed(seedColor: Colors.green, brightness: Brightness.dark),
+    colorScheme: ColorScheme.fromSeed(seedColor: Colors.amber, brightness: Brightness.dark),
     brightness: Brightness.dark,
   ),
-  themeMode: ThemeMode.system, // system / light / dark
+  themeMode: ThemeMode.light, // system / light / dark
   home: const Body(),
 );
 

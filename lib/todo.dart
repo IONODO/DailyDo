@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:prod_app/taskexpanded.dart';
 
 // ignore: must_be_immutable
 class ToDoTask extends StatelessWidget{
@@ -10,6 +11,8 @@ class ToDoTask extends StatelessWidget{
   Function(bool?)? onChanged;
   Function(BuildContext) ? deleteFunction;
   final List weeklist;
+  final Function(String title, String desc, bool completed, List weeklist)? onSave;
+
   
   ToDoTask({
     super.key,
@@ -19,7 +22,29 @@ class ToDoTask extends StatelessWidget{
     required this.deleteFunction,
     this.desc,
     this.weeklist=const [],
+    this.onSave
   });
+
+  void _openTaskDetail(BuildContext context){
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context){
+        return TaskExpanded(
+          taskName: taskName, 
+          desc: desc ?? "", 
+          completed: taskCompleted, 
+          onChanged: onChanged,
+          weeklist: weeklist,
+          onSave: onSave,
+        );
+      }
+    );
+  }
 
   @override
   Widget build(BuildContext context){
@@ -38,33 +63,37 @@ class ToDoTask extends StatelessWidget{
             )
           ]
       ),
-        child: Container(       
-          padding: EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainer,
-            borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => _openTaskDetail(context),
+          child: Container(       
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainer,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Checkbox(
+                      value: taskCompleted, 
+                      onChanged: onChanged, 
+                      activeColor: Theme.of(context).colorScheme.primary,
+                      shape: CircleBorder(),
+                    ),
+                  Text(taskName, style: TextStyle(decoration: taskCompleted ? TextDecoration.lineThrough : TextDecoration.none),)
+                  ],
+                ),
+                Row(
+                  children: [
+                    if (desc != null) Text(desc!)
+                  ],
+                ),
+              ],
+            )
           ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Checkbox(
-                    value: taskCompleted, 
-                    onChanged: onChanged, 
-                    activeColor: Theme.of(context).colorScheme.primary,
-                    shape: CircleBorder(),
-                  ),
-              Text(taskName, style: TextStyle(decoration: taskCompleted ? TextDecoration.lineThrough : TextDecoration.none),)
-                ],
-              ),
-              Row(
-                children: [
-                  if (desc != null) Text(desc!)
-                ],
-              ),
-            ],
-          )
-        ),
+        )
       ),
     );
   }
