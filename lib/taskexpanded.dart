@@ -1,22 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:prod_app/task_provider.dart';
 
 class TaskExpanded extends StatefulWidget {
-  final String taskName;
-  final String desc;
-  final bool completed;
-  final Function(bool?)? onChanged;
-  final List weeklist;
-  final Function(String title, String desc, bool completed, List weeklist)? onSave;
+  final int index; // so we know which task to edit
 
-  const TaskExpanded({
-    super.key,
-    required this.taskName,
-    required this.desc,
-    required this.completed,
-    required this.onChanged,
-    required this.weeklist,
-    this.onSave,
-  });
+  const TaskExpanded({super.key, required this.index});
 
   @override
   State<TaskExpanded> createState() => _TaskExpandedState();
@@ -31,10 +20,11 @@ class _TaskExpandedState extends State<TaskExpanded> {
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.taskName);
-    _descController = TextEditingController(text: widget.desc);
-    _selectedDays = List.from(widget.weeklist);
-    _completed = widget.completed;
+    final task = context.read<TaskModel>().tasks[widget.index];
+    _titleController = TextEditingController(text: task.title);
+    _descController = TextEditingController(text: task.desc ?? "");
+    _selectedDays = List.from(task.weeklist);
+    _completed = task.completed;
   }
 
   @override
@@ -44,26 +34,15 @@ class _TaskExpandedState extends State<TaskExpanded> {
     super.dispose();
   }
 
-  Widget _dayChip(String dayLabel) {
-    final selected = _selectedDays.contains(dayLabel);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: FilterChip(
-        label: Text(dayLabel[0]),
-        selected: selected,
-        onSelected: (val) {
-          setState(() {
-            if (val) {
-              _selectedDays.add(dayLabel);
-            } else {
-              _selectedDays.remove(dayLabel);
-            }
-          });
-        },
-      ),
-    );
+  void _toggleDay(String day) {
+    setState(() {
+      if (_selectedDays.contains(day)) {
+        _selectedDays.remove(day);
+      } else {
+        _selectedDays.add(day);
+      }
+    });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -93,9 +72,7 @@ class _TaskExpandedState extends State<TaskExpanded> {
             TextField(
               controller: _titleController,
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-              ),
+              decoration: const InputDecoration(border: InputBorder.none),
             ),
             TextField(
               controller: _descController,
@@ -107,22 +84,20 @@ class _TaskExpandedState extends State<TaskExpanded> {
             ),
             Wrap(
               spacing: 6,
-              children: [
-                _dayChip('S'),
-                _dayChip('M'),
-                _dayChip('T'),
-                _dayChip('W'),
-                _dayChip('T2'),
-                _dayChip('F'),
-                _dayChip('S2'),
-              ],
+              children: ['S','M','T','W','T2','F','S2']
+                  .map((d) => ChoiceChip(
+                        label: Text(d[0]),
+                        selected: _selectedDays.contains(d),
+                        onSelected: (_) => _toggleDay(d),
+                      ))
+                  .toList(),
             ),
             const SizedBox(height: 16),
             Row(
               children: [
                 Checkbox(
                   value: _completed,
-                  shape: CircleBorder(),
+                  shape: const CircleBorder(),
                   onChanged: (val) => setState(() => _completed = val),
                 ),
                 const Text("Mark as completed"),
@@ -139,12 +114,17 @@ class _TaskExpandedState extends State<TaskExpanded> {
                 const SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: () {
-                    // Here you’d update your toDoList in TaskPage later
-                    widget.onSave?.call(
-                      _titleController.text.trim(),
-                      _descController.text.trim(),
-                      _completed ?? false,
-                      List.from(_selectedDays),
+                    final provider = context.read<TaskModel>();
+                    provider.updateTask(
+                      widget.index,
+                      Task(
+                        _titleController.text.trim(),
+                        desc: _descController.text.trim().isNotEmpty
+                            ? _descController.text.trim()
+                            : null,
+                        completed: _completed ?? false,
+                        weeklist: List<String>.from(_selectedDays),
+                      ),
                     );
                     Navigator.pop(context);
                   },

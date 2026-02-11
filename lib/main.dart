@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:prod_app/body.dart';
+import 'package:provider/provider.dart';
+import 'package:prod_app/task_provider.dart';
 
-void main() {
-  runApp(const MainApp());
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(
+    MultiProvider(providers: [
+      ChangeNotifierProvider(create: (_) => TaskModel())
+    ],
+    child: const MainApp(),
+    ),
+  );
 }
 
 class MainApp extends StatelessWidget {

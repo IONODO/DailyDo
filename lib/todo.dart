@@ -10,8 +10,8 @@ class ToDoTask extends StatelessWidget {
   const ToDoTask({super.key, required this.index});
 
   void _openTaskDetail(BuildContext context) {
-    final taskProvider = context.read<TaskModel>();
-    final task = taskProvider.tasks[index];
+    //final taskProvider = context.read<TaskModel>();
+    //final task = taskProvider.tasks[index];
 
     showModalBottomSheet(
       context: context,
@@ -21,24 +21,7 @@ class ToDoTask extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) {
-        return TaskExpanded(
-          taskName: task.title,
-          desc: task.desc ?? "",
-          completed: task.completed,
-          weeklist: List.from(task.weeklist),
-          onSave: (title, desc, completed, weeklist) {
-            taskProvider.updateTask(
-              index,
-              Task(
-                title,
-                desc: desc.isNotEmpty ? desc : null,
-                completed: completed,
-                weeklist: weeklist,
-              ),
-            );
-          },
-          onChanged: (_) => taskProvider.toggleComplete(index),
-        );
+        return TaskExpanded(index: index);
       },
     );
   }

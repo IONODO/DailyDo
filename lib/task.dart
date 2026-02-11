@@ -14,23 +14,15 @@ class TaskPage extends StatelessWidget {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openAddTask(context);
+        onPressed: () => _openAddTask(context),
         shape: const CircleBorder(),
         child: const Icon(Icons.add),
       ),
       body: ListView.builder(
         itemCount: tasks.length,
         itemBuilder: (context,index){
-          final task = tasks[index];
-          return ToDoTask(
-            taskName: task.title, 
-            taskCompleted: task.desc, 
-            onChanged: task.completed, 
-            weeklist: task.weeklist,
-            onChanged: (_) => taskProvider.toggleComplete(index),
-            deleteFunction: (_) => taskProvider.deleteTask(index),
-            onSave: (title,desc:desc,completed:completed,weekList:weeklist),
-          );
+          //final task = tasks[index];
+          return ToDoTask(index: index);
         },
       ),
     );
