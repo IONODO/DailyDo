@@ -32,192 +32,118 @@ class TaskPage extends StatelessWidget {
     final TextEditingController titlecontrol = TextEditingController();
     final TextEditingController desccontrol = TextEditingController();
     List<String> selectedDays = [];
-
     showModalBottomSheet(
-      context: context, 
+      context: context,
       isScrollControlled: true,
-      builder: (_)=> ScheduleMenu(
-        initialDays: selectedDays,
-        onSave: (days){
-          final taskProvider = context.read<TaskModel>();
-          taskProvider.addTask(
-            Task(
-              titlecontrol.text.trim(),
-              desc: desccontrol.text.trim(),
-              weeklist: days,
-            )
-          );
-        }
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      builder: (context) {
+        // Keep a mutable copy of the selected days here
+        List<String> tempDays = List.from(selectedDays);
+
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 24,
+          ),
+          child: StatefulBuilder(
+            builder: (context, setModalState) => Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titlecontrol,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: desccontrol,
+                  decoration: const InputDecoration(
+                    hintText: 'Add description...',
+                    border: InputBorder.none,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Reminder / schedule selector
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(20)),
+                        ),
+                        builder: (context) {
+                          return ScheduleMenu(
+                            initialDays: tempDays,
+                            onSave: (days) {
+                              // Update state inside this bottom sheet
+                              setModalState(() {
+                                tempDays = List.from(days);
+                              });
+                            },
+                          );
+                        },
+                      );
+                    },
+                    icon: const Icon(Icons.alarm),
+                    label: Text(
+                      tempDays.isEmpty
+                          ? "Repeat/Schedule"
+                          : "Repeats: ${tempDays.join(", ")}",
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        final title = titlecontrol.text.trim();
+                        final desc = desccontrol.text.trim();
+
+                        if (title.isNotEmpty) {
+                          final provider = context.read<TaskModel>();
+                          provider.addTask(
+                            Task(
+                              title,
+                              desc: desc.isNotEmpty ? desc : null,
+                              weeklist: List.from(tempDays),
+                            ),
+                          );
+                        }
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Save'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
-
-// class _TaskPageState extends State<TaskPage> {
-//   final TextEditingController _controller = TextEditingController();
-//   final TextEditingController _desccontroller = TextEditingController();
-//   List<String> _selectDay = [];
-//   //list of all the tasks
-//   List toDoList = [
-//     ["Add a new task using +",false,"description goes here",[]]
-//   ];
-
-//   //method to change the checkbox, cause flutter isn't doing it by default? idk bruh
-//   void checkBoxChanged(bool? value,int index){
-//     setState(() {
-//       toDoList[index][1] = !toDoList[index][1];
-//     });
-//   }
-
-//   void _openAddTask(){
-//     showModalBottomSheet(
-//       context: context,
-//       isScrollControlled: true,
-//       //backgroundColor: Colors.white,
-//       shape: const RoundedRectangleBorder(
-//         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-//       ),
-//       builder: (context) {
-//         return Padding(
-//           padding: EdgeInsets.only(
-//             bottom: MediaQuery.of(context).viewInsets.bottom, // move with keyboard
-//             left: 16,
-//             right: 16,
-//             top: 24,
-//           ),
-//           child: Column(
-//             mainAxisSize: MainAxisSize.min,
-//             children: [
-//               TextField( //titel of task
-//                 controller: _controller,
-//                 autofocus: true, // keyboard pops up automatically
-//                 decoration: const InputDecoration(
-//                   hintText: 'Add a new task...',
-//                   border: OutlineInputBorder(),
-//                 ),
-//                 onSubmitted: (value) => _saveTask(), // press enter to save
-//               ),
-//               TextField(  //description
-//                 controller: _desccontroller,
-//                 autofocus: false,
-//                 decoration: const InputDecoration(
-//                   hintText: 'Add desription...',
-//                   border: InputBorder.none,
-//                 ),
-//               ),
-//               const SizedBox(height: 12),
-//               // New Schedule/Reminder button
-//               Align(
-//                 alignment: Alignment.centerLeft,
-//                 child: ElevatedButton.icon(
-//                   onPressed: (){
-//                     showModalBottomSheet(
-//                       context: context, 
-//                       isScrollControlled: true,
-//                       //backgroundColor: Colors.white,
-//                       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-//                       builder: (context){
-//                         return ScheduleMenu(
-//                           initialDays: _selectDay, 
-//                           onSave: (selectedDays){
-//                             setState(() {
-//                               _selectDay = List<String>.from(selectedDays);
-//                             });
-//                           }
-//                         );
-//                       },
-//                     );
-//                   },
-//                   label: const Icon(Icons.alarm),
-//                   style: ElevatedButton.styleFrom(
-//                     backgroundColor: Theme.of(context).colorScheme.primary,
-//                     foregroundColor: Theme.of(context).colorScheme.onPrimary,
-//                   ),
-//                 ),
-//               ),
-
-//               const SizedBox(height: 12),
-
-//               // Existing save/cancel buttons
-//               Row(
-//                 mainAxisAlignment: MainAxisAlignment.end,
-//                 children: [
-//                   TextButton(
-//                     onPressed: () => Navigator.pop(context),
-//                     child: const Text('Cancel'),
-//                   ),
-//                   const SizedBox(width: 8),
-//                   ElevatedButton(
-//                     onPressed: _saveTask,
-//                     child: const Text('Save'),
-//                   ),
-//                 ],
-//               ),
-
-//               const SizedBox(height: 16),
-//             ],
-//           ),
-//         );
-//       },
-//     );
-//   } 
-  
-//   void _saveTask(){
-//     final text = _controller.text.trim();
-//     final desctext = _desccontroller.text;
-//     if (text.isNotEmpty) {
-//       setState(() {
-//       toDoList.add([
-//         text,
-//         false,
-//         desctext.isNotEmpty ? desctext : null,
-//         List<String>.from(_selectDay), // copy current selections
-//       ]);
-//     });
-//     }
-//     _selectDay.clear();
-//     _desccontroller.clear();
-//     _controller.clear();
-//     Navigator.pop(context); // close the bottom sheet
-//   }
-
-//   void _deleteTask(int index){
-//     setState(() {
-//       toDoList.removeAt(index);
-//     });
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       floatingActionButton: FloatingActionButton(onPressed: _openAddTask,shape: const CircleBorder(),child: Icon(Icons.add),),
-//       body: ListView.builder(
-//         itemCount: toDoList.length,
-//         itemBuilder: (context,index){
-//           return ToDoTask(
-//             taskName: toDoList[index][0], 
-//             taskCompleted: toDoList[index][1], 
-//             desc: toDoList[index][2],
-//             weeklist: toDoList[index].length > 3 ? List.from(toDoList[index][3]) : <String>[],
-//             onChanged: (value) => checkBoxChanged(value,index),
-//             deleteFunction: (context) => _deleteTask(index),
-//             onSave: (title, desc, completed, weeklist){
-//               setState(() {
-//                 toDoList[index][0] = title;
-//                 toDoList[index][1] = completed;
-//                 toDoList[index][2] = desc.isNotEmpty ? desc : null;
-//                 // make sure you store a copy
-//                 toDoList[index] = [
-//                   toDoList[index][0],
-//                   toDoList[index][1],
-//                   toDoList[index][2],
-//                   List.from(weeklist)
-//                 ];
-//               });
-//             },
-//           );
-//         },
-//       ),     
-//     );
-//   }
-// }
