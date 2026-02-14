@@ -3,7 +3,6 @@ import 'package:prod_app/calendar.dart';
 import 'package:prod_app/task.dart';
 import 'package:prod_app/settings.dart';
 import 'package:prod_app/timer.dart';
-import 'package:prod_app/topbar.dart';
 
 class Body extends StatefulWidget{
   const Body({super.key});
@@ -24,10 +23,6 @@ class _BodyState extends State<Body>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: TopBar(),
-      ),
       body: _pages[currentPageIndex],
       bottomNavigationBar: NavigationBar(
         selectedIndex: currentPageIndex,

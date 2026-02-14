@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:prod_app/topbar.dart';
 
 class SettingsPage extends StatelessWidget{
   const SettingsPage ({super.key});
@@ -7,8 +6,9 @@ class SettingsPage extends StatelessWidget{
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      appBar: const PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight), child: TopBar()
+      appBar: AppBar(
+        title: Text('Settings', style: TextStyle(fontSize: 28,fontWeight: FontWeight.bold),),
+        centerTitle: true,
       ),
       body: Text("Settings will be here"),
     );

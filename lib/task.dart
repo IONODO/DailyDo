@@ -13,6 +13,10 @@ class TaskPage extends StatelessWidget {
     final tasks = taskProvider.tasks;
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Tasks', style: TextStyle(fontSize: 28,fontWeight: FontWeight.bold),),
+        centerTitle: true,
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openAddTask(context),
         shape: const CircleBorder(),
