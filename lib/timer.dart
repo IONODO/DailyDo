@@ -17,6 +17,16 @@ class _TimerPageState extends State<TimerPage> {
   late Timer _swtimer;
   bool isReturnVisible = false;
 
+  //pomodoro details
+  int pomoFocusMin=25,pomoBreakMin=5;
+  int pomosec=0;
+  bool isPomorunning = false;
+  bool onBreak=false; //must remember this is pomodoro's
+  Timer? _pomotimer; 
+  int remainingSeconds = 25 * 60; // always in seconds
+  bool isPomoRunning = false;
+  bool pomoResetShow = false;
+
   void startStopwatch(){
     setState(() {
       isStopwatchrunning = true;
@@ -28,11 +38,10 @@ class _TimerPageState extends State<TimerPage> {
 
   void _swSecond(){
     setState(() {
-      swsec ++;
-      stopwatchsecs = swsec.toString();
-      if(stopwatchsecs.length == 1){
-        stopwatchsecs = "0$stopwatchsecs";
-      } else{
+      swsec++;
+      if (swsec < 60) {
+        stopwatchsecs = swsec.toString().padLeft(2, '0');
+      } else {
         _swMinutes();
       }
     });
@@ -43,10 +52,7 @@ class _TimerPageState extends State<TimerPage> {
       swsec=0;
       stopwatchsecs="00";
       swmin++;
-      stopwatchmins = swmin.toString();
-      if(stopwatchmins.length == 1){
-        stopwatchmins = "0$stopwatchmins";
-      }
+      stopwatchmins = swmin.toString().padLeft(2, '0');
     });
   }
 
@@ -78,17 +84,54 @@ class _TimerPageState extends State<TimerPage> {
   }
 
   void startPomo(){
-
+    setState(() {
+      isPomoRunning = true;
+    });
+    _pomotimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        if (remainingSeconds > 0) {
+          remainingSeconds--;
+        }else {
+          timer.cancel();
+          isPomoRunning = false;
+          onBreak = !onBreak;
+          if (onBreak) {
+            // start break automatically
+            remainingSeconds = pomoBreakMin * 60;
+            startPomo();
+          } else {
+            // break finished — back to focus
+            remainingSeconds = pomoFocusMin * 60;
+          }
+        }
+      });
+    });
   }
 
   void pausePomo(){
-
+    _pomotimer?.cancel();
+    setState(() {
+      isPomoRunning = false;
+      pomoResetShow = true;
+    });
   }
 
   void endPomo(){
     //this will end the current pomo and start running the next break timer too, which should be skippable
-
+    _pomotimer?.cancel();
+    setState(() {
+      isPomoRunning = false;
+      pomoResetShow = false;
+      onBreak = false;
+      remainingSeconds = pomoFocusMin * 60;
+    });
   }
+
+  String _formatPomoTime(int totalSeconds) {
+    final m = (totalSeconds ~/ 60).toString().padLeft(2, '0');
+    final s = (totalSeconds % 60).toString().padLeft(2, '0');
+    return "$m:$s";
+  } //just to format the pomodoro times cause rn its a mess
 
   @override
   Widget build(BuildContext context) {
@@ -201,8 +244,8 @@ class _TimerPageState extends State<TimerPage> {
             shape: BoxShape.circle,
             color: Theme.of(context).colorScheme.primaryContainer,
           ),
-          child: const Text(
-            "25:00",
+          child: Text(
+            _formatPomoTime(remainingSeconds),
             style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
           ),
         ),
@@ -211,19 +254,28 @@ class _TimerPageState extends State<TimerPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton.icon(
-              icon: const Icon(Icons.play_arrow),
-              onPressed: () {},
-              label: const Text("Start"),
+              icon: Icon(isPomoRunning ? Icons.pause : Icons.play_arrow),
+              onPressed: isPomoRunning ? pausePomo : startPomo,
+              label: Text(isPomoRunning ? "Pause":"Start"),
             ),
             const SizedBox(width: 12),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.pause),
-              onPressed: () {},
-              label: const Text("Pause"),
-            ),
+            (pomoResetShow && !isPomoRunning) ? ElevatedButton.icon(
+              icon: const Icon(Icons.replay),
+              onPressed: (){
+                endPomo();
+              },
+              label: Text("Reset"),
+            ) : SizedBox(height: 30),
           ],
         ),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    if (isStopwatchrunning) _swtimer.cancel();
+    if (isPomoRunning) _pomotimer?.cancel();
+      super.dispose();
   }
 }
