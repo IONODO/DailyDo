@@ -119,19 +119,96 @@ class _TimerPageState extends State<TimerPage> {
   void endPomo(){
     //this will end the current pomo and start running the next break timer too, which should be skippable
     _pomotimer?.cancel();
-    setState(() {
-      isPomoRunning = false;
-      pomoResetShow = false;
-      onBreak = false;
-      remainingSeconds = pomoFocusMin * 60;
-    });
-  }
+      setState(() {
+        isPomoRunning = false;
+        pomoResetShow = false;
+        onBreak = false;
+        remainingSeconds = pomoFocusMin * 60;
+      });
+    }
 
-  String _formatPomoTime(int totalSeconds) {
-    final m = (totalSeconds ~/ 60).toString().padLeft(2, '0');
-    final s = (totalSeconds % 60).toString().padLeft(2, '0');
-    return "$m:$s";
-  } //just to format the pomodoro times cause rn its a mess
+    String _formatPomoTime(int totalSeconds) {
+      final m = (totalSeconds ~/ 60).toString().padLeft(2, '0');
+      final s = (totalSeconds % 60).toString().padLeft(2, '0');
+      return "$m:$s";
+    } //just to format the pomodoro times cause rn its a mess
+
+  void _openPomodoroDialog() {
+    final focusController = TextEditingController(text: pomoFocusMin.toString());
+    final breakController = TextEditingController(text: pomoBreakMin.toString());
+  
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            "Set Pomodoro & Break Duration",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: focusController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: "Focus (minutes)",
+                  border: OutlineInputBorder(),
+                  hintText: "1–120",
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: breakController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: "Break (minutes)",
+                  border: OutlineInputBorder(),
+                  hintText: "1–120",
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final int? focusMin = int.tryParse(focusController.text);
+                final int? breakMin = int.tryParse(breakController.text);
+  
+                if (focusMin == null || breakMin == null || 
+                    focusMin <= 0 || breakMin <= 0 || 
+                    focusMin > 120 || breakMin > 120) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Enter valid durations between 1–120 minutes."),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                  return;
+                }
+  
+                setState(() {
+                  pomoFocusMin = focusMin;
+                  pomoBreakMin = breakMin;
+                  remainingSeconds = pomoFocusMin * 60; // reset timer
+                });
+  
+                Navigator.pop(context);
+              },
+              child: const Text("Save"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -148,6 +225,9 @@ class _TimerPageState extends State<TimerPage> {
                   onPressed: (){setState(() {
                     isPomodoro=false;
                   });}, 
+                  style: TextButton.styleFrom(
+                    backgroundColor: isPomodoro ? Colors.transparent : Theme.of(context).colorScheme.surfaceContainerHigh,
+                  ),
                   child: Text("Stopwatch")
                 ),
                 const SizedBox(width: 12),
@@ -155,6 +235,9 @@ class _TimerPageState extends State<TimerPage> {
                   onPressed: (){setState(() {
                     isPomodoro=true;
                   });}, 
+                  style: TextButton.styleFrom(
+                    backgroundColor: isPomodoro ? Theme.of(context).colorScheme.surfaceContainerHigh : Colors.transparent,
+                  ),
                   child: Text("Pomodoro")
                 ),
               ],
@@ -236,17 +319,20 @@ class _TimerPageState extends State<TimerPage> {
       key: const ValueKey("pomodoro"),
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          height: 200,
-          width: 200,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Theme.of(context).colorScheme.primaryContainer,
-          ),
-          child: Text(
-            _formatPomoTime(remainingSeconds),
-            style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
+        GestureDetector(
+          onTap: _openPomodoroDialog,
+          child: Container(
+            height: 200,
+            width: 200,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            ),
+            child: Text(
+              _formatPomoTime(remainingSeconds),
+              style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
+            ),
           ),
         ),
         const SizedBox(height: 30),
