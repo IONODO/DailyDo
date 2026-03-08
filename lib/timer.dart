@@ -9,7 +9,7 @@ class TimerPage extends StatefulWidget {
 }
 
 class _TimerPageState extends State<TimerPage> {
-  bool isPomodoro = false; // false → Stopwatch, true → Pomodoro
+  bool isPomodoro = false; // false->Stopwatch, true->Pomodoro
   //stopwatch details
   String stopwatchmins = "00", stopwatchsecs="00";
   bool isStopwatchrunning = false;
@@ -96,11 +96,11 @@ class _TimerPageState extends State<TimerPage> {
           isPomoRunning = false;
           onBreak = !onBreak;
           if (onBreak) {
-            // start break automatically
+            // start break automatically, should be changable in settings
             remainingSeconds = pomoBreakMin * 60;
             startPomo();
           } else {
-            // break finished — back to focus
+            // break finished, goes back to focus
             remainingSeconds = pomoFocusMin * 60;
           }
         }
@@ -136,7 +136,7 @@ class _TimerPageState extends State<TimerPage> {
   void _openPomodoroDialog() {
     final focusController = TextEditingController(text: pomoFocusMin.toString());
     final breakController = TextEditingController(text: pomoBreakMin.toString());
-  
+    
     showDialog(
       context: context,
       builder: (context) {
@@ -157,7 +157,7 @@ class _TimerPageState extends State<TimerPage> {
                 decoration: const InputDecoration(
                   labelText: "Focus (minutes)",
                   border: OutlineInputBorder(),
-                  hintText: "1–120",
+                  hintText: "1-120",
                 ),
               ),
               const SizedBox(height: 16),
@@ -167,7 +167,7 @@ class _TimerPageState extends State<TimerPage> {
                 decoration: const InputDecoration(
                   labelText: "Break (minutes)",
                   border: OutlineInputBorder(),
-                  hintText: "1–120",
+                  hintText: "1-120",
                 ),
               ),
             ],
@@ -187,7 +187,7 @@ class _TimerPageState extends State<TimerPage> {
                     focusMin > 120 || breakMin > 120) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text("Enter valid durations between 1–120 minutes."),
+                      content: Text("Enter valid durations between 1-120 minutes."),
                       duration: Duration(seconds: 2),
                     ),
                   );

@@ -10,7 +10,9 @@ class SettingsPage extends StatelessWidget{
         title: Text('Settings', style: TextStyle(fontSize: 28,fontWeight: FontWeight.bold),),
         centerTitle: true,
       ),
-      body: Text("Settings will be here"),
+      body: Padding(
+        padding: const EdgeInsetsGeometry.all(20) 
+      ),
     );
   }
 }
