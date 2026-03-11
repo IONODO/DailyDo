@@ -6,8 +6,8 @@ import 'package:prod_app/task_provider.dart';
 
 // ignore: must_be_immutable
 class ToDoTask extends StatelessWidget {
-  final int index; // to identify which task in provider
-  const ToDoTask({super.key, required this.index});
+  final Task task; // to identify which task in provider
+  const ToDoTask({super.key, required this.task});
 
   void _openTaskDetail(BuildContext context) {
     //final taskProvider = context.read<TaskModel>();
@@ -21,15 +21,14 @@ class ToDoTask extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) {
-        return TaskExpanded(index: index);
+        return TaskExpanded(task: task);
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final task = context.watch<TaskModel>().tasks[index];
-
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Slidable(
@@ -38,7 +37,7 @@ class ToDoTask extends StatelessWidget {
           motion: const StretchMotion(),
           children: [
             SlidableAction(
-              onPressed: (_) => context.read<TaskModel>().deleteTask(index),
+              onPressed: (_) => context.read<TaskModel>().deleteTask(task.id!),
               icon: Icons.delete,
               backgroundColor: Colors.redAccent,
               borderRadius: BorderRadius.circular(12),
@@ -61,8 +60,13 @@ class ToDoTask extends StatelessWidget {
                   children: [
                     Checkbox(
                       value: task.completed,
-                      onChanged: (_) =>
-                          context.read<TaskModel>().toggleComplete(index),
+                      onChanged: (_)=>{
+                        context.read<TaskModel>().toggleComplete(task)
+                      },
+                          //above logic what it does is that it calls the database changing provider
+                          //to update the task with same details but completion changed
+                          //below logic is old logic, just a toggle locally
+                          //context.read<TaskModel>().toggleComplete(index),
                       activeColor: Theme.of(context).colorScheme.primary,
                       shape: const CircleBorder(),
                     ),

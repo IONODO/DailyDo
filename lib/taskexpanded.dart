@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:prod_app/task_provider.dart';
 
 class TaskExpanded extends StatefulWidget {
-  final int index; // so we know which task to edit
+  final Task task; // so we know which task to edit
 
-  const TaskExpanded({super.key, required this.index});
+  const TaskExpanded({super.key, required this.task});
 
   @override
   State<TaskExpanded> createState() => _TaskExpandedState();
@@ -20,7 +20,7 @@ class _TaskExpandedState extends State<TaskExpanded> {
   @override
   void initState() {
     super.initState();
-    final task = context.read<TaskModel>().tasks[widget.index];
+    final task = widget.task;
     _titleController = TextEditingController(text: task.title);
     _descController = TextEditingController(text: task.desc ?? "");
     _selectedDays = List.from(task.weeklist);
@@ -116,9 +116,9 @@ class _TaskExpandedState extends State<TaskExpanded> {
                   onPressed: () {
                     final provider = context.read<TaskModel>();
                     provider.updateTask(
-                      widget.index,
                       Task(
                         _titleController.text.trim(),
+                        id: widget.task.id,
                         desc: _descController.text.trim().isNotEmpty
                             ? _descController.text.trim()
                             : null,

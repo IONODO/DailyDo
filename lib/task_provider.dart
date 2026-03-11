@@ -1,38 +1,72 @@
 import 'package:flutter/material.dart';
+import 'backend/database_service.dart';
 
 class Task{
+  int? id;
   String title;
   String? desc;
   bool completed;
   List<String> weeklist = [];
 
-  Task(this.title,{this.desc,this.completed=false,this.weeklist=const []});
+  Task(this.title,{this.id,this.desc,this.completed=false,this.weeklist=const []});
 }
 
 class TaskModel extends ChangeNotifier{
-  final List<Task> _tasks = [
-    Task("Add a new task with +",desc:"Add descriptions too!!"),
-  ];
-
+  final DatabaseService _databaseService = DatabaseService.instance;
+  final List<Task> _tasks = [];
   List<Task> get tasks => List.unmodifiable(_tasks);
-
-  void addTask(Task task){
-    _tasks.add(task);
-    notifyListeners();
+  TaskModel(){
+    loadTasks();
   }
 
-  void deleteTask(int index){
-    _tasks.removeAt(index);
-    notifyListeners();
+  Future<void> addTask(Task task) async{
+    await _databaseService.addTask(task.title, task.desc, task.weeklist.join(","),);
+    await loadTasks();
   }
 
-  void updateTask(int index,Task newTask){
-    _tasks[index] = newTask;
-    notifyListeners();
+  Future<void> deleteTask(int id) async{
+    await _databaseService.deleteTask(id);
+    await loadTasks();
   }
 
-  void toggleComplete(int index){
-    _tasks[index].completed = !_tasks[index].completed;
+  Future<void> updateTask(Task task) async {
+    await _databaseService.updateTask(
+      task.id!,
+      task.title,
+      task.desc,
+      task.weeklist.join(','),
+      task.completed ? 1 : 0,
+    );
+    await loadTasks();
+  }
+
+  Future<void> toggleComplete(Task task) async {
+    await _databaseService.updateTask(
+      task.id!,
+      task.title,
+      task.desc,
+      task.weeklist.join(','),
+      task.completed ? 0 : 1,
+    );
+    await loadTasks();
+  }
+
+  Future<void> loadTasks() async {
+    final data = await _databaseService.getTasks();
+    _tasks.clear();
+    for (var row in data) {
+      _tasks.add(
+        Task(
+          row['title'],
+          id : row['id'],
+          desc: row['desc'],
+          completed: row['status'] == 1,
+          weeklist: row['days'] == null
+            ? []
+            : (row['days'] as String).split(','),
+        ),
+      );
+    }
     notifyListeners();
   }
 }

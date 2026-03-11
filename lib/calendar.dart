@@ -59,7 +59,7 @@ class _CalendarPageState extends State<CalendarPage> {
               scrollDirection: Axis.horizontal,
               itemCount: 20000,
               itemBuilder: (context,index){
-                DateTime date = baseDate.add(Duration(days: index -3 ));
+                DateTime date = baseDate.add(Duration(days: index -10000 ));
                 return GestureDetector(
                   onTap: (){
                     setState(() {

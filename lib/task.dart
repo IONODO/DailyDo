@@ -25,8 +25,8 @@ class TaskPage extends StatelessWidget {
       body: ListView.builder(
         itemCount: tasks.length,
         itemBuilder: (context,index){
-          //final task = tasks[index];
-          return ToDoTask(index: index);
+          final task = tasks[index];
+          return ToDoTask(task: task);
         },
       ),
     );
