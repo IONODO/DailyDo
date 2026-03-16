@@ -7,20 +7,35 @@ class Task{
   String? desc;
   bool completed;
   List<String> weeklist = [];
+  DateTime ? created;
+  DateTime ? dueDateTime;
+  Duration? remindersForDue;
 
-  Task(this.title,{this.id,this.desc,this.completed=false,this.weeklist=const []});
+  Task(this.title,{this.id,this.desc,this.completed=false,this.weeklist=const [],this.created,this.dueDateTime});
 }
 
 class TaskModel extends ChangeNotifier{
   final DatabaseService _databaseService = DatabaseService.instance;
   final List<Task> _tasks = [];
-  List<Task> get tasks => List.unmodifiable(_tasks);
+  List<Task> tasksForToday(){
+    final today = DateTime.now();
+    final weekday = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][today.weekday-1];
+    bool sameDay(DateTime a, DateTime b){
+      return a.year==b.year && a.month==b.month && a.day==b.day;
+    }
+    return _tasks.where((task){
+      final createdToday = task.created != null && sameDay(task.created!, today);
+      final dueToday = task.dueDateTime != null && sameDay(task.dueDateTime!, today);
+      final recurringToday = task.weeklist.contains(weekday);
+      return createdToday || dueToday || recurringToday;
+    }).toList();
+  }  
   TaskModel(){
     loadTasks();
   }
 
   Future<void> addTask(Task task) async{
-    await _databaseService.addTask(task.title, task.desc, task.weeklist.join(","),);
+    await _databaseService.addTask(task.title, task.desc, task.weeklist.join(","),task.created);
     await loadTasks();
   }
 
@@ -52,6 +67,7 @@ class TaskModel extends ChangeNotifier{
   }
 
   Future<void> loadTasks() async {
+    await _databaseService.cleanupCompleted();
     final data = await _databaseService.getTasks();
     _tasks.clear();
     for (var row in data) {
@@ -61,11 +77,12 @@ class TaskModel extends ChangeNotifier{
           id : row['id'],
           desc: row['desc'],
           completed: row['status'] == 1,
-          weeklist: row['days'] == null
-            ? []
-            : (row['days'] as String).split(','),
+          weeklist: row['days'] == null ? [] : (row['days'] as String).split(','),
+          created: row['created'] != null ? DateTime.parse(row['created']) : null,
+          dueDateTime: row['due'] != null ? DateTime.parse(row['due']) : null,
         ),
       );
+      print(row);
     }
     notifyListeners();
   }

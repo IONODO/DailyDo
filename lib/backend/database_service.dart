@@ -11,6 +11,9 @@ class DatabaseService {
   final String _tasksDescColumnName = "desc";
   final String _tasksDaysColumnName = "days";
   final String _tasksStatusColumnName = "status";
+  final String _tasksCreationColumnName = "created";
+  final String _tasksDueDatetimeColumnName = "due";
+  final String _tasksReminderColumnName = "reminders";
 
   DatabaseService._constructor();
 
@@ -23,6 +26,7 @@ class DatabaseService {
   Future<Database> getDatabase() async{
     final databaseDirPath = await getDatabasesPath();
     final databasePath = join(databaseDirPath,"tasks.db");
+    await deleteDatabase(databasePath);
     
     final database = await openDatabase(
       databasePath, version: 1,
@@ -33,6 +37,9 @@ class DatabaseService {
             $_tasksTitleColumnName TEXT NOT NULL,
             $_tasksDescColumnName TEXT,
             $_tasksDaysColumnName TEXT,
+            $_tasksCreationColumnName TEXT,
+            $_tasksDueDatetimeColumnName TEXT,
+            $_tasksReminderColumnName INTEGER,
             $_tasksStatusColumnName INTEGER
           )
         ''');
@@ -41,12 +48,13 @@ class DatabaseService {
     return database;
   }
 
-  Future<void> addTask(String taskName, String? desc, String? days,) async {
+  Future<void> addTask(String taskName, String? desc, String? days, DateTime? created,) async {
     final db = await database;
     await db.insert(_tasksTableName, {
       _tasksTitleColumnName: taskName,
       _tasksDescColumnName: desc,
       _tasksDaysColumnName: days,
+      _tasksCreationColumnName: DateTime.now().toIso8601String(),
       _tasksStatusColumnName: 0
     });
   }
@@ -69,5 +77,15 @@ class DatabaseService {
   Future<List<Map<String, dynamic>>> getTasks() async {
     final db = await database;
     return await db.query(_tasksTableName);
+  }
+
+  Future<void> cleanupCompleted() async{
+    final db = await database;
+    final cutoff = DateTime.now().subtract(const Duration(days:3)).toIso8601String();
+    await db.delete(
+      _tasksTableName,
+      where: "status = 1 AND created < ?",
+      whereArgs: [cutoff],
+    );
   }
 }

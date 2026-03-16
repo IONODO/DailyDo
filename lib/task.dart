@@ -4,13 +4,18 @@ import 'package:prod_app/task_provider.dart';
 import 'package:prod_app/todo.dart';
 import 'package:provider/provider.dart';
 
-class TaskPage extends StatelessWidget {
+class TaskPage extends StatefulWidget {
   const TaskPage({super.key});
 
   @override
+  State<TaskPage> createState() => _TaskPageState();
+}
+
+class _TaskPageState extends State<TaskPage> {
+  @override
   Widget build(BuildContext context){
     final taskProvider = context.watch<TaskModel>();
-    final tasks = taskProvider.tasks;
+    final tasks = taskProvider.tasksForToday();
 
     return Scaffold(
       appBar: AppBar(
@@ -133,6 +138,7 @@ class TaskPage extends StatelessWidget {
                               title,
                               desc: desc.isNotEmpty ? desc : null,
                               weeklist: List.from(tempDays),
+                              created: DateTime.now()
                             ),
                           );
                         }

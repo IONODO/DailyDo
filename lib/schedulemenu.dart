@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 class ScheduleMenu extends StatefulWidget {
@@ -15,12 +16,16 @@ class ScheduleMenu extends StatefulWidget {
 }
 
 class _ScheduleMenuState extends State<ScheduleMenu> {
+
   late List<String> _selectedDays;
+
+  DateTime? _selectedDueDate;
+  TimeOfDay? _selectedTime;
+  String? _selectedReminder;
 
   @override
   void initState() {
     super.initState();
-    // Create a copy so you can edit without mutating parent state
     _selectedDays = List<String>.from(widget.initialDays);
   }
 
@@ -42,19 +47,24 @@ class _ScheduleMenuState extends State<ScheduleMenu> {
       child: ElevatedButton(
         onPressed: () => _toggleDay(day),
         style: ElevatedButton.styleFrom(
-          backgroundColor: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surfaceContainerHigh,
-          foregroundColor: isSelected ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurface,
+          backgroundColor: isSelected
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.surfaceContainerHigh,
+          foregroundColor: isSelected
+              ? Theme.of(context).colorScheme.onPrimary
+              : Theme.of(context).colorScheme.onSurface,
           shape: const CircleBorder(),
           minimumSize: const Size(40, 40),
           padding: EdgeInsets.zero,
         ),
-        child: Text(day[0]), // first letter for now
+        child: Text(day[0]),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -62,50 +72,141 @@ class _ScheduleMenuState extends State<ScheduleMenu> {
         right: 16,
         top: 24,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            "Set Reminder / Schedule",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
 
-          // Days of the week
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _dayButton('S'),
-              _dayButton('M'),
-              _dayButton('T'),
-              _dayButton('W'),
-              _dayButton('T2'),
-              _dayButton('F'),
-              _dayButton('S2'),
-            ],
-          ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
 
-          const SizedBox(height: 20),
+            const Text(
+              "Set Reminder / Schedule",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+            const SizedBox(height: 16),
+
+            /// WEEKDAY SELECTOR
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _dayButton('Sun'),
+                _dayButton('Mon'),
+                _dayButton('Tue'),
+                _dayButton('Wed'),
+                _dayButton('Thu'),
+                _dayButton('Fri'),
+                _dayButton('Sat'),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            /// CALENDAR
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Theme.of(context)
+                    .colorScheme
+                    .surfaceContainerHighest,
               ),
-              const SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: () {
-                  widget.onSave(_selectedDays);
-                  Navigator.pop(context);
+              child: CalendarDatePicker(
+                initialDate: DateTime.now(),
+                firstDate: DateTime(2020),
+                lastDate: DateTime(2100),
+                onDateChanged: (date) {
+                  setState(() {
+                    _selectedDueDate = date;
+                  });
                 },
-                child: const Text('Save'),
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-        ],
+            ),
+
+            const SizedBox(height: 12),
+
+            /// TIME + REMINDER
+            Row(
+              children: [
+
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.access_time),
+                    label: Text(
+                      _selectedTime == null
+                          ? "Add Time"
+                          : _selectedTime!.format(context),
+                    ),
+                    onPressed: () async {
+
+                      final time = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                      );
+
+                      if (time != null) {
+                        setState(() {
+                          _selectedTime = time;
+                        });
+                      }
+
+                    },
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    hint: const Text("Reminder"),
+                    initialValue: _selectedReminder,
+                    items: const [
+                      DropdownMenuItem(value: "10", child: Text("10 min")),
+                      DropdownMenuItem(value: "30", child: Text("30 min")),
+                      DropdownMenuItem(value: "60", child: Text("1 hour")),
+                      DropdownMenuItem(value: "1440", child: Text("1 day")),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedReminder = value;
+                      });
+                    },
+                  ),
+                ),
+
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            /// SAVE BUTTONS
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+
+                const SizedBox(width: 8),
+
+                ElevatedButton(
+                  onPressed: () {
+
+                    widget.onSave(_selectedDays);
+
+                    Navigator.pop(context);
+
+                  },
+                  child: const Text('Save'),
+                ),
+
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+          ],
+        ),
       ),
     );
   }
