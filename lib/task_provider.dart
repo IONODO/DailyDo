@@ -17,6 +17,7 @@ class Task{
 class TaskModel extends ChangeNotifier{
   final DatabaseService _databaseService = DatabaseService.instance;
   final List<Task> _tasks = [];
+  List<Task> get tasks =>List.unmodifiable(_tasks); //this shi is for the date-specific task in calendar.dart
   List<Task> tasksForToday(){
     final today = DateTime.now();
     final weekday = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][today.weekday-1];
