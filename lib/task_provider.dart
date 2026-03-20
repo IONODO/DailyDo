@@ -11,7 +11,7 @@ class Task{
   DateTime ? dueDateTime;
   Duration? remindersForDue;
 
-  Task(this.title,{this.id,this.desc,this.completed=false,this.weeklist=const [],this.created,this.dueDateTime});
+  Task(this.title,{this.id,this.desc,this.completed=false,this.weeklist=const [],this.created,this.dueDateTime,this.remindersForDue});
 }
 
 class TaskModel extends ChangeNotifier{
@@ -27,7 +27,8 @@ class TaskModel extends ChangeNotifier{
       final createdToday = task.created != null && sameDay(task.created!, today);
       final dueToday = task.dueDateTime != null && sameDay(task.dueDateTime!, today);
       final recurringToday = task.weeklist.contains(weekday);
-      return createdToday || dueToday || recurringToday;
+      final result =  createdToday || dueToday || recurringToday;
+      return result;
     }).toList();
   }  
   TaskModel(){
@@ -35,7 +36,7 @@ class TaskModel extends ChangeNotifier{
   }
 
   Future<void> addTask(Task task) async{
-    await _databaseService.addTask(task.title, task.desc, task.weeklist.join(","),task.created);
+    await _databaseService.addTask(task.title, task.desc, task.weeklist.join(","),task.created,task.dueDateTime,task.remindersForDue?.inMinutes);
     await loadTasks();
   }
 
@@ -51,6 +52,8 @@ class TaskModel extends ChangeNotifier{
       task.desc,
       task.weeklist.join(','),
       task.completed ? 1 : 0,
+      task.dueDateTime,
+      task.remindersForDue?.inMinutes,
     );
     await loadTasks();
   }
@@ -62,6 +65,8 @@ class TaskModel extends ChangeNotifier{
       task.desc,
       task.weeklist.join(','),
       task.completed ? 0 : 1,
+      task.dueDateTime,
+      task.remindersForDue?.inMinutes,
     );
     await loadTasks();
   }
@@ -70,7 +75,7 @@ class TaskModel extends ChangeNotifier{
     await _databaseService.cleanupCompleted();
     final data = await _databaseService.getTasks();
     _tasks.clear();
-    for (var row in data) {
+    for (var row in data) {     
       _tasks.add(
         Task(
           row['title'],
@@ -78,11 +83,11 @@ class TaskModel extends ChangeNotifier{
           desc: row['desc'],
           completed: row['status'] == 1,
           weeklist: row['days'] == null ? [] : (row['days'] as String).split(','),
-          created: row['created'] != null ? DateTime.parse(row['created']) : null,
-          dueDateTime: row['due'] != null ? DateTime.parse(row['due']) : null,
+          created: row['created'] != null ? DateTime.parse(row['created']).toLocal() : null,
+          dueDateTime: row['due'] != null ? DateTime.parse(row['due']).toLocal() : null,
+          remindersForDue: row['reminders'] != null ? Duration(minutes: row['reminders']) : null
         ),
       );
-      print(row);
     }
     notifyListeners();
   }

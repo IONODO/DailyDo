@@ -26,7 +26,6 @@ class DatabaseService {
   Future<Database> getDatabase() async{
     final databaseDirPath = await getDatabasesPath();
     final databasePath = join(databaseDirPath,"tasks.db");
-    await deleteDatabase(databasePath);
     
     final database = await openDatabase(
       databasePath, version: 1,
@@ -48,13 +47,15 @@ class DatabaseService {
     return database;
   }
 
-  Future<void> addTask(String taskName, String? desc, String? days, DateTime? created,) async {
+  Future<void> addTask(String taskName, String? desc, String? days, DateTime? created,DateTime? due, int? reminderMinutes) async {
     final db = await database;
     await db.insert(_tasksTableName, {
       _tasksTitleColumnName: taskName,
       _tasksDescColumnName: desc,
       _tasksDaysColumnName: days,
-      _tasksCreationColumnName: DateTime.now().toIso8601String(),
+      _tasksCreationColumnName: created?.toLocal().toIso8601String(),
+      _tasksDueDatetimeColumnName :due?.toLocal().toIso8601String(),
+      _tasksReminderColumnName:reminderMinutes,
       _tasksStatusColumnName: 0
     });
   }
@@ -64,13 +65,15 @@ class DatabaseService {
     await db.delete(_tasksTableName,where: '$_tasksIdColumnName = ?', whereArgs: [id]);
   }
 
-  Future<void> updateTask(int id, String title, String? desc, String? days, int status) async{
+  Future<void> updateTask(int id, String title, String? desc, String? days, int status, DateTime? due, int? reminderMinutes) async{
     final db = await database;
     await db.update(_tasksTableName, {
       _tasksTitleColumnName: title,
       _tasksDescColumnName: desc,
       _tasksDaysColumnName: days,
       _tasksStatusColumnName: status,
+      _tasksDueDatetimeColumnName: due?.toIso8601String(),
+      _tasksReminderColumnName: reminderMinutes
     }, where:'$_tasksIdColumnName = ?', whereArgs: [id]);
   }
 

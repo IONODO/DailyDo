@@ -1,95 +1,137 @@
 import 'package:flutter/material.dart';
-import 'package:date_picker_timeline/date_picker_timeline.dart';
 import 'package:intl/intl.dart';
 
-
-class CalendarPage extends StatefulWidget{
-  const CalendarPage ({super.key});
+class CalendarPage extends StatefulWidget {
+  const CalendarPage({super.key});
 
   @override
   State<CalendarPage> createState() => _CalendarPageState();
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  DateTime selectedDate = DateTime.now();
-  final baseDate = DateTime.now();
+  static const double itemWidth = 70.0;
+  static const int range = 3650; // 10 years each side
+  static const int todayIndex = range;
+  static const int totalItems = range * 2 + 1;
+
+  late DateTime today;
+  late DateTime selectedDate;
   late ScrollController scrollController;
-  bool isSameDate(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-  }
+
   @override
   void initState() {
     super.initState();
-    scrollController = ScrollController(
-      initialScrollOffset: 10000 * 70,
-    );
+    final now = DateTime.now();
+    today = DateTime(now.year, now.month, now.day);
+    selectedDate = today;
+    // DO NOT set initialScrollOffset here
+    scrollController = ScrollController();
   }
 
   @override
-  Widget build(BuildContext context){
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Only jump once, after layout
+    if (!scrollController.hasClients) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!scrollController.hasClients) return;
+        final screenWidth = MediaQuery.of(context).size.width;
+        final offset = (todayIndex * itemWidth) - (screenWidth / 2) + (itemWidth / 2);
+        scrollController.jumpTo(offset);
+      });
+    }
+  }
+
+  bool isSameDate(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: TextButton(
-          onPressed: (){}, 
-          child: Text(DateFormat.MMMM().format(selectedDate),style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),)
+        title: Text(
+          DateFormat.yMMMM().format(selectedDate),
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
       ),
       body: Column(
         children: [
-          Container(
-            margin: const EdgeInsets.only(right: 10,left:10),
-            child: DatePicker(
-              DateTime.now(),
-              width: 60,
-              height: 100,
-              initialSelectedDate: DateTime.now(),
-              selectionColor: Theme.of(context).colorScheme.primary,
-              selectedTextColor: Colors.white,
-              onDateChange: (date){
-                setState(() {
-                  selectedDate = date;
-                });
-              },
-            ),
-          ),
           SizedBox(
-            height: 100,
+            height: 90,
             child: ListView.builder(
+              controller: scrollController,
               scrollDirection: Axis.horizontal,
-              itemCount: 20000,
-              itemBuilder: (context,index){
-                DateTime date = baseDate.add(Duration(days: index -10000 ));
+              itemCount: totalItems,
+              itemExtent: itemWidth,
+              itemBuilder: (context, index) {
+                final date = today.add(Duration(days: index - todayIndex));
+                final isSelected = isSameDate(selectedDate, date);
+                final isToday = isSameDate(today, date);
+
                 return GestureDetector(
-                  onTap: (){
-                    setState(() {
-                      selectedDate=date;
-                    });
-                  },
-                  child: SizedBox(
-                    width: 70,
-                    child: Container(
-                      width: 40,
-                      decoration: BoxDecoration(
-                      color: isSameDate(selectedDate, date)? Theme.of(context).colorScheme.primary : Colors.transparent,
-                      borderRadius: BorderRadius.circular(16),
+                  onTap: () => setState(() => selectedDate = date),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 3),
+                    decoration: BoxDecoration(
+                      color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent,
+                      borderRadius: BorderRadius.circular(14),
+                      border: isToday && !isSelected
+                          ? Border.all(
+                              color: Theme.of(context).colorScheme.primary,
+                              width: 1.5,
+                            )
+                          : null,
                     ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(DateFormat('MMM').format(date),style: isSameDate(selectedDate, date)? TextStyle(color: Colors.white) : TextStyle(color: Colors.black)),
-                          Text(DateFormat('d').format(date),style: isSameDate(selectedDate, date)? TextStyle(color: Colors.white) : TextStyle(color: Colors.black)),
-                          Text(DateFormat('E').format(date),style: isSameDate(selectedDate, date)? TextStyle(color: Colors.white) : TextStyle(color: Colors.black)),
-                        ],
-                      ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          DateFormat('MMM').format(date),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isSelected ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          DateFormat('d').format(date),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          DateFormat('E').format(date),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: isSelected ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );
-              }
+              },
             ),
-          )
+          ),
+          const Divider(height: 1),
+          const Expanded(
+            child: Center(
+              child: Text('Tasks for selected date'),
+              
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 }

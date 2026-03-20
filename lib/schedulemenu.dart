@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 
 class ScheduleMenu extends StatefulWidget {
   final List<String> initialDays;
-  final Function(List<String>) onSave;
+  final Function(List<String>,DateTime?,Duration?) onSave;
+  final DateTime? initialDue;
+  final Duration? initialReminder;
 
   const ScheduleMenu({
     super.key,
     required this.initialDays,
     required this.onSave,
+    this.initialDue,
+    this.initialReminder,
   });
 
   @override
@@ -27,6 +31,17 @@ class _ScheduleMenuState extends State<ScheduleMenu> {
   void initState() {
     super.initState();
     _selectedDays = List<String>.from(widget.initialDays);
+    if (widget.initialDue != null) {
+      _selectedDueDate = widget.initialDue;
+      _selectedTime = TimeOfDay(
+        hour: widget.initialDue!.hour,
+        minute: widget.initialDue!.minute,
+      );
+    }
+
+    if (widget.initialReminder != null) {
+      _selectedReminder = widget.initialReminder!.inMinutes.toString();
+    }
   }
 
   void _toggleDay(String day) {
@@ -87,16 +102,7 @@ class _ScheduleMenuState extends State<ScheduleMenu> {
 
             /// WEEKDAY SELECTOR
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _dayButton('Sun'),
-                _dayButton('Mon'),
-                _dayButton('Tue'),
-                _dayButton('Wed'),
-                _dayButton('Thu'),
-                _dayButton('Fri'),
-                _dayButton('Sat'),
-              ],
+              children: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d) => Expanded(child: Center(child: _dayButton(d)))).toList(),
             ),
 
             const SizedBox(height: 20),
@@ -191,8 +197,20 @@ class _ScheduleMenuState extends State<ScheduleMenu> {
 
                 ElevatedButton(
                   onPressed: () {
+                    DateTime? finalDateTime;
+                    if(_selectedDueDate != null){
+                      finalDateTime = DateTime(
+                        _selectedDueDate!.year,
+                        _selectedDueDate!.month,
+                        _selectedDueDate!.day,
+                        _selectedTime?.hour ?? 0,
+                        _selectedTime?.minute ?? 0,
+                      );
+                    }
 
-                    widget.onSave(_selectedDays);
+                    final reminder = _selectedReminder !=null ? Duration(minutes: int.parse(_selectedReminder!)) : null;
+
+                    widget.onSave(_selectedDays,finalDateTime,reminder);
 
                     Navigator.pop(context);
 

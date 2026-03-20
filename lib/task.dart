@@ -41,6 +41,8 @@ class _TaskPageState extends State<TaskPage> {
     final TextEditingController titlecontrol = TextEditingController();
     final TextEditingController desccontrol = TextEditingController();
     List<String> selectedDays = [];
+    DateTime? selectedDue;
+    Duration? selectedReminder;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -93,10 +95,14 @@ class _TaskPageState extends State<TaskPage> {
                         builder: (context) {
                           return ScheduleMenu(
                             initialDays: tempDays,
-                            onSave: (days) {
+                            initialDue: selectedDue,
+                            initialReminder: selectedReminder,
+                            onSave: (days,due,reminder) {
                               // Update state inside this bottom sheet
                               setModalState(() {
                                 tempDays = List.from(days);
+                                selectedDue=due;
+                                selectedReminder=reminder;
                               });
                             },
                           );
@@ -138,7 +144,9 @@ class _TaskPageState extends State<TaskPage> {
                               title,
                               desc: desc.isNotEmpty ? desc : null,
                               weeklist: List.from(tempDays),
-                              created: DateTime.now()
+                              created: DateTime.now(),
+                              dueDateTime: selectedDue,
+                              remindersForDue: selectedReminder
                             ),
                           );
                         }
