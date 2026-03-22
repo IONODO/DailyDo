@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:prod_app/task_provider.dart';
+import 'package:prod_app/providers/task_provider.dart';
 
 class TaskExpanded extends StatefulWidget {
   final Task task;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:prod_app/schedulemenu.dart';
-import 'package:prod_app/task_provider.dart';
+import 'package:prod_app/providers/task_provider.dart';
 import 'package:prod_app/todo.dart';
 import 'package:provider/provider.dart';
 

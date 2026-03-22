@@ -13,24 +13,36 @@ class Body extends StatefulWidget{
 
 class _BodyState extends State<Body>{
   int currentPageIndex=0;
-  final List<Widget> _pages = const [
-    TaskPage(),
-    TimerPage(),
-    CalendarPage(),
-    SettingsPage(),
-  ];
+  bool isTimerRunning = false;
+  late final List<Widget> _pages;
+
+  @override
+  void initState(){
+    super.initState();
+    _pages = [
+      TaskPage(),
+      TimerPage(onTimerStarted: (running){    
+        setState((){
+          isTimerRunning=running;
+        }); 
+      }),
+      CalendarPage(),
+      SettingsPage(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[currentPageIndex],
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: isTimerRunning
+    ? null
+    : NavigationBar(
         selectedIndex: currentPageIndex,
-        // indicatorColor: Colors.amber,
         onDestinationSelected: (int index) {
-          if(index==3){
+          if (index == 3) {
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const SettingsPage())
+              MaterialPageRoute(builder: (context) => const SettingsPage()),
             );
           } else {
             setState(() {
@@ -40,7 +52,7 @@ class _BodyState extends State<Body>{
         },
         destinations: const [
           NavigationDestination(icon: Icon(Icons.check), label: 'Tasks'),
-          NavigationDestination(icon: Icon(Icons.timer),label: 'Timer',),
+          NavigationDestination(icon: Icon(Icons.timer), label: 'Timer'),
           NavigationDestination(icon: Icon(Icons.calendar_month_rounded), label: 'Calendar'),
           NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),
         ],

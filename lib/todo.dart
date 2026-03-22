@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
 import 'package:prod_app/taskexpanded.dart';
-import 'package:prod_app/task_provider.dart';
+import 'package:prod_app/providers/task_provider.dart';
 
 // ignore: must_be_immutable
 class ToDoTask extends StatelessWidget {
@@ -50,7 +50,7 @@ class ToDoTask extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              color: Theme.of(context).colorScheme.primaryContainer,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 class TimerPage extends StatefulWidget {
-  const TimerPage({super.key});
-
+  const TimerPage({super.key,required this.onTimerStarted});
+  final Function(bool isRunning) onTimerStarted;
   @override
   State<TimerPage> createState() => _TimerPageState();
 }
@@ -31,6 +31,7 @@ class _TimerPageState extends State<TimerPage> {
     setState(() {
       isStopwatchrunning = true;
     });
+    widget.onTimerStarted(true);
     _swtimer = Timer.periodic(Duration(seconds: 1), (timer){
       _swSecond();
     });
@@ -61,6 +62,7 @@ class _TimerPageState extends State<TimerPage> {
     setState(() {
       isStopwatchrunning=false;
     });
+    widget.onTimerStarted(false);
     isReturnVisible = checkVals();
   }
 
@@ -87,6 +89,7 @@ class _TimerPageState extends State<TimerPage> {
     setState(() {
       isPomoRunning = true;
     });
+    widget.onTimerStarted(true);
     _pomotimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         if (remainingSeconds > 0) {
@@ -114,6 +117,7 @@ class _TimerPageState extends State<TimerPage> {
       isPomoRunning = false;
       pomoResetShow = true;
     });
+    widget.onTimerStarted(false);
   }
 
   void endPomo(){
@@ -125,6 +129,7 @@ class _TimerPageState extends State<TimerPage> {
         onBreak = false;
         remainingSeconds = pomoFocusMin * 60;
       });
+      widget.onTimerStarted(false);
     }
 
     String _formatPomoTime(int totalSeconds) {
@@ -218,6 +223,7 @@ class _TimerPageState extends State<TimerPage> {
         child: Column(
           children: [
             // Toggle buttons
+            if(!isStopwatchrunning && !isPomoRunning)  //dont show top timer selection when timer is running 
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -226,7 +232,7 @@ class _TimerPageState extends State<TimerPage> {
                     isPomodoro=false;
                   });}, 
                   style: TextButton.styleFrom(
-                    backgroundColor: isPomodoro ? Colors.transparent : Theme.of(context).colorScheme.surfaceContainerHigh,
+                    backgroundColor: isPomodoro ? Colors.transparent : Theme.of(context).colorScheme.primaryContainer,
                   ),
                   child: Text("Stopwatch")
                 ),
@@ -236,7 +242,7 @@ class _TimerPageState extends State<TimerPage> {
                     isPomodoro=true;
                   });}, 
                   style: TextButton.styleFrom(
-                    backgroundColor: isPomodoro ? Theme.of(context).colorScheme.surfaceContainerHigh : Colors.transparent,
+                    backgroundColor: isPomodoro ? Theme.of(context).colorScheme.primaryContainer : Colors.transparent,
                   ),
                   child: Text("Pomodoro")
                 ),
@@ -269,10 +275,6 @@ class _TimerPageState extends State<TimerPage> {
       children: [
         Container(
           padding: const EdgeInsets.all(70),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          ),
           child: Text(
             "$stopwatchmins:$stopwatchsecs",
             style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold),
@@ -320,14 +322,14 @@ class _TimerPageState extends State<TimerPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         GestureDetector(
-          onTap: _openPomodoroDialog,
+          onTap: !isPomoRunning ? _openPomodoroDialog : null,
           child: Container(
             height: 200,
             width: 200,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              border: Border.all(color: Theme.of(context).colorScheme.primary, width: 4)
             ),
             child: Text(
               _formatPomoTime(remainingSeconds),
