@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prod_app/backend/notification_service.dart';
 import '../backend/database_service.dart';
 
 class Task{
@@ -38,15 +39,27 @@ class TaskModel extends ChangeNotifier{
 
   Future<void> addTask(Task task) async{
     await _databaseService.addTask(task.title, task.desc, task.weeklist.join(","),task.created,task.dueDateTime,task.remindersForDue?.inMinutes);
+    if(task.dueDateTime!=null && task.remindersForDue!=null){
+      final notificationTime = task.dueDateTime?.subtract(task.remindersForDue!);
+      await NotificationService.instance.scheduleNotification(
+        id: task.id!, 
+        title: task.title, 
+        body: "Reminder: Task due soon!", 
+        scheduledDate: notificationTime!,
+      );
+    }
+
     await loadTasks();
   }
 
   Future<void> deleteTask(int id) async{
+    await NotificationService.instance.cancelNotification(id);
     await _databaseService.deleteTask(id);
     await loadTasks();
   }
 
   Future<void> updateTask(Task task) async {
+    await NotificationService.instance.cancelNotification(task.id!);
     await _databaseService.updateTask(
       task.id!,
       task.title,
@@ -56,6 +69,15 @@ class TaskModel extends ChangeNotifier{
       task.dueDateTime,
       task.remindersForDue?.inMinutes,
     );
+    if(task.dueDateTime!=null && task.remindersForDue!=null){
+      final notificationTime = task.dueDateTime?.subtract(task.remindersForDue!);
+      await NotificationService.instance.scheduleNotification(
+        id: task.id!, 
+        title: task.title, 
+        body: "Reminder: Task due soon!", 
+        scheduledDate: notificationTime!,
+      );
+    }
     await loadTasks();
   }
 

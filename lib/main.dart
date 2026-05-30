@@ -8,6 +8,7 @@ import 'package:prod_app/providers/task_provider.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService.instance.requestPermissions();
   await NotificationService.instance.initNotification();
   runApp(
     MultiProvider(providers: [

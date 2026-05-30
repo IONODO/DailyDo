@@ -14,68 +14,68 @@ class NotificationService {
 
   //initialize
   Future<void> initNotification() async{
-    // if(_isInitialized) return; //so that we dont reinitialize
-    // tz.initializeTimeZones();
-    // //android settings
-    // const AndroidInitializationSettings initAndroidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    print("called");
+    if(_isInitialized) return; //so that we dont reinitialize
+    tz.initializeTimeZones();
+    print("timezone done");
+    
+    //android settings
+    const AndroidInitializationSettings initAndroidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    print("android initialized");
+    //ios settings
+    const DarwinInitializationSettings initIOSSettings= DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+    print("ios too");
+    //linux/desktop later
 
-    // //ios settings
-    // const DarwinInitializationSettings initIOSSettings= DarwinInitializationSettings(
-    //   requestAlertPermission: true,
-    //   requestBadgePermission: true,
-    //   requestSoundPermission: true,
-    // );
+    //init settings, universal
+    const InitializationSettings initSettings = InitializationSettings(
+      android: initAndroidSettings,
+      iOS: initIOSSettings,
+    );
+    print("Gloabal one done too");
+    await notificationsPlugin.initialize(
+      settings: initSettings,
+    );
+    print("notifications plugin initialized");
+    await notificationsPlugin
+    .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>() ?.requestNotificationsPermission();
+   print("final bit");
+   _isInitialized = true;
+   print("Set true");
 
-    // //linux/desktop later
+  // print("STEP 1");
 
-    // //init settings, universal
-    // const InitializationSettings initSettings = InitializationSettings(
-    //   android: initAndroidSettings,
-    //   iOS: initIOSSettings,
-    // );
-    // await notificationsPlugin.initialize(
-    //   settings: initSettings,
-    //   onDidReceiveBackgroundNotificationResponse: (NotificationResponse response) async{
-    //     final payload = response.payload;
-    //     print("Notification tapped: $payload");
-    //   }
-    // );
+  // if (_isInitialized) return;
 
-    // await notificationsPlugin
-    // .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>() ?.requestNotificationsPermission();
+  // print("STEP 2");
 
-    // _isInitialized = true;
+  // const androidSettings =
+  //     AndroidInitializationSettings('@mipmap/ic_launcher');
 
+  // print("STEP 3");
 
-  print("STEP 1");
+  // const iosSettings = DarwinInitializationSettings();
 
-  if (_isInitialized) return;
+  // print("STEP 4");
 
-  print("STEP 2");
+  // const initSettings = InitializationSettings(
+  //   android: androidSettings,
+  //   iOS: iosSettings,
+  // );
 
-  const androidSettings =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
+  // print("STEP 5");
 
-  print("STEP 3");
+  // await notificationsPlugin.initialize(
+  //   settings: initSettings,
+  // );
 
-  const iosSettings = DarwinInitializationSettings();
+  // print("STEP 6");
 
-  print("STEP 4");
-
-  const initSettings = InitializationSettings(
-    android: androidSettings,
-    iOS: iosSettings,
-  );
-
-  print("STEP 5");
-
-  await notificationsPlugin.initialize(
-    settings: initSettings,
-  );
-
-  print("STEP 6");
-
-  _isInitialized = true;
+  // _isInitialized = true;
   }
 
   //this is the instant notification function
@@ -128,6 +128,15 @@ class NotificationService {
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       payload: payload,
     );
+  }
+
+  Future<void> requestPermissions() async{
+    await notificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+      ?.requestNotificationsPermission();
+
+    // final granted = await notificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+    //   ?.areNotificationsEnabled();
+    // print("Notifications enabled: $granted");
   }
 
   //cancel notifications
