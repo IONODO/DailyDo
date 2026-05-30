@@ -31,6 +31,7 @@ class _ScheduleMenuState extends State<ScheduleMenu> {
   void initState() {
     super.initState();
     _selectedDays = List<String>.from(widget.initialDays);
+    _selectedDueDate = widget.initialDue ?? DateTime.now();
     if (widget.initialDue != null) {
       _selectedDueDate = widget.initialDue;
       _selectedTime = TimeOfDay(
@@ -207,9 +208,12 @@ class _ScheduleMenuState extends State<ScheduleMenu> {
                         _selectedTime?.minute ?? 0,
                       );
                     }
+                    
 
                     final reminder = _selectedReminder !=null ? Duration(minutes: int.parse(_selectedReminder!)) : null;
-
+                    print("SCHEDULE SAVE:");
+print(finalDateTime);
+print(reminder);
                     widget.onSave(_selectedDays,finalDateTime,reminder);
 
                     Navigator.pop(context);
