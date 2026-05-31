@@ -107,6 +107,7 @@ class NotificationService {
     required DateTime scheduledDate,
     String? payload,
   }) async{
+    print("Scheduling notification");
     if(scheduledDate.isBefore(DateTime.now())) return;  //if some mf puts a due date in the past, it should be ignored
     const NotificationDetails notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
@@ -119,15 +120,22 @@ class NotificationService {
 
       iOS: DarwinNotificationDetails(),
     );
-    await notificationsPlugin.zonedSchedule(
-      id: id,
-      title: title,
-      body: body,
-      scheduledDate: tz.TZDateTime.from(scheduledDate, tz.local),
-      notificationDetails: notificationDetails,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      payload: payload,
-    );
+    print("Scheduled at ${DateTime.now()}");
+    try{
+      await notificationsPlugin.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: tz.TZDateTime.from(scheduledDate, tz.local),
+        notificationDetails: notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: payload,
+      );
+      print("Zoned schedule complete");
+    } catch(e,stack){
+      print("Error: $e");
+      print(stack);
+    }
   }
 
   Future<void> requestPermissions() async{
