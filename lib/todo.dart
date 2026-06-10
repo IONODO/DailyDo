@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:prod_app/timer.dart';
 import 'package:provider/provider.dart';
 import 'package:prod_app/taskexpanded.dart';
 import 'package:prod_app/providers/task_provider.dart';
@@ -8,6 +9,11 @@ import 'package:prod_app/providers/task_provider.dart';
 class ToDoTask extends StatelessWidget {
   final Task task; // to identify which task in provider
   const ToDoTask({super.key, required this.task});
+  String formatFocus(int seconds){
+    final h = seconds ~/ 3600;
+    final m = (seconds % 3600) ~/ 60;
+    return "${h}h ${m}m";
+  }
 
   void _openTaskDetail(BuildContext context) {
     //final taskProvider = context.read<TaskModel>();
@@ -81,6 +87,19 @@ class ToDoTask extends StatelessWidget {
                         ),
                       ),
                     ),
+                    IconButton(
+                      icon: const Icon(Icons.play_arrow),
+                      onPressed: () { 
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => TimerPage(
+                              task: task,
+                            ),
+                          ),
+                        );                   
+                      },
+                    ),
                   ],
                 ),
                 if (task.desc != null && task.desc!.isNotEmpty)
@@ -94,6 +113,12 @@ class ToDoTask extends StatelessWidget {
                       ),
                     ),
                   ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 48),
+                  child: Text(
+                    formatFocus(task.focusSeconds),
+                  ),
+                ),
               ],
             ),
           ),

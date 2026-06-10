@@ -13,7 +13,6 @@ class Body extends StatefulWidget{
 
 class _BodyState extends State<Body>{
   int currentPageIndex=0;
-  bool isTimerRunning = false;
   late final List<Widget> _pages;
 
   @override
@@ -21,11 +20,7 @@ class _BodyState extends State<Body>{
     super.initState();
     _pages = [
       TaskPage(),
-      TimerPage(onTimerStarted: (running){    
-        setState((){
-          isTimerRunning=running;
-        }); 
-      }),
+      TimerPage(),
       CalendarPage(),
       SettingsPage(),
     ];
@@ -35,9 +30,7 @@ class _BodyState extends State<Body>{
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[currentPageIndex],
-      bottomNavigationBar: isTimerRunning
-    ? null
-    : NavigationBar(
+      bottomNavigationBar: NavigationBar(
         selectedIndex: currentPageIndex,
         onDestinationSelected: (int index) {
           if (index == 3) {

@@ -1,14 +1,32 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:provider/provider.dart';
+import 'package:prod_app/providers/task_provider.dart';
+
 
 class TimerPage extends StatefulWidget {
-  const TimerPage({super.key,required this.onTimerStarted});
-  final Function(bool isRunning) onTimerStarted;
+  final Task? task;
+  const TimerPage({
+    super.key,
+    this.task,
+  });
   @override
   State<TimerPage> createState() => _TimerPageState();
 }
 
 class _TimerPageState extends State<TimerPage> {
+  @override
+  void initState() {
+    super.initState();
+    if(widget.task != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {   
+        context.read<TaskModel>()
+            .startTimer(widget.task!);
+        startStopwatch();
+      });
+    }
+  }
+
   bool isPomodoro = false; // false->Stopwatch, true->Pomodoro
   //stopwatch details
   String stopwatchmins = "00", stopwatchsecs="00";
@@ -31,7 +49,6 @@ class _TimerPageState extends State<TimerPage> {
     setState(() {
       isStopwatchrunning = true;
     });
-    widget.onTimerStarted(true);
     _swtimer = Timer.periodic(Duration(seconds: 1), (timer){
       _swSecond();
     });
@@ -62,8 +79,10 @@ class _TimerPageState extends State<TimerPage> {
     setState(() {
       isStopwatchrunning=false;
     });
-    widget.onTimerStarted(false);
     isReturnVisible = checkVals();
+    if(widget.task != null){
+      context.read<TaskModel>().stopTimer(widget.task!);
+    }
   }
 
   void resetStopwatch(){
@@ -89,7 +108,6 @@ class _TimerPageState extends State<TimerPage> {
     setState(() {
       isPomoRunning = true;
     });
-    widget.onTimerStarted(true);
     _pomotimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         if (remainingSeconds > 0) {
@@ -117,7 +135,6 @@ class _TimerPageState extends State<TimerPage> {
       isPomoRunning = false;
       pomoResetShow = true;
     });
-    widget.onTimerStarted(false);
   }
 
   void endPomo(){
@@ -129,7 +146,6 @@ class _TimerPageState extends State<TimerPage> {
         onBreak = false;
         remainingSeconds = pomoFocusMin * 60;
       });
-      widget.onTimerStarted(false);
     }
 
     String _formatPomoTime(int totalSeconds) {
@@ -219,7 +235,7 @@ class _TimerPageState extends State<TimerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(50),
         child: Column(
           children: [
             // Toggle buttons
@@ -362,8 +378,16 @@ class _TimerPageState extends State<TimerPage> {
 
   @override
   void dispose() {
-    if (isStopwatchrunning) _swtimer.cancel();
-    if (isPomoRunning) _pomotimer?.cancel();
-      super.dispose();
+    if(widget.task != null &&
+     widget.task!.timerStartedAt != null){
+      context.read<TaskModel>().stopTimer(widget.task!);
+    }
+    if(isStopwatchrunning){
+      _swtimer.cancel();
+    }
+    if(isPomoRunning){
+      _pomotimer?.cancel();
+    }
+    super.dispose();
   }
 }

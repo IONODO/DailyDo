@@ -14,6 +14,8 @@ class DatabaseService {
   final String _tasksCreationColumnName = "created";
   final String _tasksDueDatetimeColumnName = "due";
   final String _tasksReminderColumnName = "reminders";
+  final String _focusSeconds = "focusSeconds";
+  final String _timerStarted = "timerStarted";
 
   DatabaseService._constructor();
 
@@ -39,7 +41,9 @@ class DatabaseService {
             $_tasksCreationColumnName TEXT,
             $_tasksDueDatetimeColumnName TEXT,
             $_tasksReminderColumnName INTEGER,
-            $_tasksStatusColumnName INTEGER
+            $_tasksStatusColumnName INTEGER,
+            $_focusSeconds INTEGER,
+            $_timerStarted TEXT
           )
         ''');
       }
@@ -47,7 +51,7 @@ class DatabaseService {
     return database;
   }
 
-  Future<void> addTask(String taskName, String? desc, String? days, DateTime? created,DateTime? due, int? reminderMinutes) async {
+  Future<void> addTask(String taskName, String? desc, String? days, DateTime? created,DateTime? due, int? reminderMinutes, int focusSeconds, DateTime? timerStartedAt) async {
     final db = await database;
     await db.insert(_tasksTableName, {
       _tasksTitleColumnName: taskName,
@@ -56,7 +60,9 @@ class DatabaseService {
       _tasksCreationColumnName: created?.toLocal().toIso8601String(),
       _tasksDueDatetimeColumnName :due?.toLocal().toIso8601String(),
       _tasksReminderColumnName:reminderMinutes,
-      _tasksStatusColumnName: 0
+      _tasksStatusColumnName: 0,
+      _focusSeconds: focusSeconds,
+      _timerStarted: timerStartedAt?.toIso8601String(),
     });
   }
 
@@ -75,6 +81,19 @@ class DatabaseService {
       _tasksDueDatetimeColumnName: due?.toIso8601String(),
       _tasksReminderColumnName: reminderMinutes
     }, where:'$_tasksIdColumnName = ?', whereArgs: [id]);
+  }
+
+  Future<void> updateTimer(int id, int focusSeconds, DateTime? timerStartedAt,) async {
+    final db = await database;
+    await db.update(
+      _tasksTableName,
+      {
+        _focusSeconds: focusSeconds,
+        _timerStarted: timerStartedAt?.toIso8601String(),
+      },
+      where: '$_tasksIdColumnName = ?',
+      whereArgs: [id],
+    );
   }
 
   Future<List<Map<String, dynamic>>> getTasks() async {

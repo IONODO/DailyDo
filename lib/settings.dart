@@ -25,27 +25,6 @@ class SettingsPage extends StatelessWidget{
               );
             },
           ),
-          ListTile(
-            title: const Text("Test notification"),
-            onTap: () async {
-              await NotificationService.instance.showNotifications(
-                id: 1000,
-                title: "Test",
-                body: "Notification system works",
-              );
-            },
-          ),
-          ListTile(
-            title: const Text("Scheduled notification test"),
-            onTap: () async{
-              await NotificationService.instance.scheduleNotification(
-                id: 999, 
-                title: "Scheduled timer works", 
-                body: "YAY",
-                scheduledDate: DateTime.now().add(const Duration(seconds: 5)),
-              );
-            }
-          ),
           Center(child: Text("More coming soon..."))
         ],
       ),

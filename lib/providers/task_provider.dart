@@ -11,8 +11,10 @@ class Task{
   DateTime ? created;
   DateTime ? dueDateTime;
   Duration? remindersForDue;
+  int focusSeconds;
+  DateTime? timerStartedAt;
 
-  Task(this.title,{this.id,this.desc,this.completed=false,this.weeklist=const [],this.created,this.dueDateTime,this.remindersForDue});
+  Task(this.title,{this.id,this.desc,this.completed=false,this.weeklist=const [],this.created,this.dueDateTime,this.remindersForDue,this.focusSeconds=0,this.timerStartedAt});
 }
 
 class TaskModel extends ChangeNotifier{
@@ -38,9 +40,10 @@ class TaskModel extends ChangeNotifier{
   }
 
   Future<void> addTask(Task task) async{
-    await _databaseService.addTask(task.title, task.desc, task.weeklist.join(","),task.created,task.dueDateTime,task.remindersForDue?.inMinutes);
+    await _databaseService.addTask(task.title, task.desc, task.weeklist.join(","),task.created,task.dueDateTime,task.remindersForDue?.inMinutes, task.focusSeconds, task.timerStartedAt);
     if(task.dueDateTime!=null && task.remindersForDue!=null){
       final notificationTime = task.dueDateTime?.subtract(task.remindersForDue!);
+      print("ADDING TASK: ${task.title}");
       await NotificationService.instance.scheduleNotification(
         id: task.id!, 
         title: task.title, 
@@ -81,6 +84,29 @@ class TaskModel extends ChangeNotifier{
     await loadTasks();
   }
 
+  Future<void> startTimer(Task task) async {
+    task.timerStartedAt = DateTime.now();
+    await _databaseService.updateTimer(
+      task.id!,
+      task.focusSeconds,
+      task.timerStartedAt,
+    );
+    notifyListeners();
+  }
+
+  Future<void> stopTimer(Task task) async {
+    if(task.timerStartedAt == null) return;
+    final elapsed = DateTime.now().difference(task.timerStartedAt!).inSeconds;
+    task.focusSeconds += elapsed;
+    task.timerStartedAt = null;
+    await _databaseService.updateTimer(
+      task.id!,
+      task.focusSeconds,
+      null,
+    );
+    notifyListeners();
+  }
+
   Future<void> toggleComplete(Task task) async {
     await _databaseService.updateTask(
       task.id!,
@@ -108,7 +134,9 @@ class TaskModel extends ChangeNotifier{
           weeklist: row['days'] == null ? [] : (row['days'] as String).split(','),
           created: row['created'] != null ? DateTime.parse(row['created']).toLocal() : null,
           dueDateTime: row['due'] != null ? DateTime.parse(row['due']).toLocal() : null,
-          remindersForDue: row['reminders'] != null ? Duration(minutes: row['reminders']) : null
+          remindersForDue: row['reminders'] != null ? Duration(minutes: row['reminders']) : null,
+          focusSeconds: row['focusSeconds'] ?? 0,
+          timerStartedAt: row['timerStarted'] != null ? DateTime.parse(row['timerStarted']) : null,
         ),
       );
     }
