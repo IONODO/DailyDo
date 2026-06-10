@@ -8,17 +8,12 @@ Completed tasks clean themselves up automatically after 3 days *(configurable du
 
 ## Screenshots
 
-| Tasks | Task Details |
-|--------|--------|
-| ![Tasks]<img width="409" height="889" alt="2026-06-10_16-05" src="https://github.com/user-attachments/assets/f504424b-9669-40b5-99a0-14ac5f487a00"/>
-) | ![Task Details](<img width="413" height="909" alt="2026-06-10_16-16" src="https://github.com/user-attachments/assets/68944b3b-0431-4141-9d2b-e84ce21ff890" />
-) |
-
-| Calendar | Timer |
-|--------|--------|
-| ![Calendar](<img width="397" height="918" alt="2026-06-10_16-06_1" src="https://github.com/user-attachments/assets/4f3b291a-53f1-4c76-b500-7aea845841f0" />
-) | ![Timer](<img width="407" height="914" alt="2026-06-10_16-06" src="https://github.com/user-attachments/assets/969ca70e-b970-4c14-a32e-114e6da44e7b" />
-)|
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f504424b-9669-40b5-99a0-14ac5f487a00" width="220">
+  <img src="https://github.com/user-attachments/assets/68944b3b-0431-4141-9d2b-e84ce21ff890" width="220">
+  <img src="https://github.com/user-attachments/assets/4f3b291a-53f1-4c76-b500-7aea845841f0" width="220">
+  <img src="https://github.com/user-attachments/assets/969ca70e-b970-4c14-a32e-114e6da44e7b" width="220">
+</p>
 
 ---
 
